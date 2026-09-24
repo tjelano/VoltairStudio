@@ -1,16 +1,17 @@
-# AGENTS.md — GameForge (bolt.diy fork)
+# AGENTS.md — VoltairStudio (bolt.diy fork)
 
 ## What this is
 
-This repository is a fork of [stackblitz-labs/bolt.diy](https://github.com/stackblitz-labs/bolt.diy)
+**VoltairStudio** is a fork of [stackblitz-labs/bolt.diy](https://github.com/stackblitz-labs/bolt.diy)
 (MIT licensed), the open-source version of `bolt.new` — an AI agent that writes real code and runs
-it live in-browser via StackBlitz's WebContainers. It is being customized into the new core of
-**GameForge**, replacing GameForge's previous custom-built, HTML/CSS-based website-creation pipeline
-(that older codebase lives on, unchanged, at the existing `tjelano/gameforge` repo — kept as a
-working reference and safety net, not merged with this one).
+it live in-browser via StackBlitz's WebContainers. It is being customized into what was originally
+going to be a rebuild of "GameForge" (the previous, separate custom-built, HTML/CSS-based
+website-creation pipeline — that older codebase lives on unchanged at the existing `tjelano/gameforge`
+repo, kept as a working reference and safety net, not merged with this one) but has since been given
+its own name and identity: VoltairStudio.
 
 Two remotes are configured on purpose:
-- `origin` → `tjelano/bolt.diy` (this fork — push/pull here by default)
+- `origin` → `tjelano/VoltairStudio` (this fork — push/pull here by default)
 - `upstream` → `stackblitz-labs/bolt.diy` (the real project — pull updates from here deliberately,
   never automatically)
 
