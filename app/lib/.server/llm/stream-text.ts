@@ -10,6 +10,7 @@ import { createScopedLogger } from '~/utils/logger';
 import { createFilesContext, extractPropertiesFromMessage } from './utils';
 import { discussPrompt } from '~/lib/common/prompts/discuss-prompt';
 import type { DesignScheme } from '~/types/design-scheme';
+import type { FirebaseConfig } from '~/types/firebase';
 
 export type Messages = Message[];
 
@@ -21,6 +22,10 @@ export interface StreamingOptions extends Omit<Parameters<typeof _streamText>[0]
       anonKey?: string;
       supabaseUrl?: string;
     };
+  };
+  firebaseConnection?: {
+    isConnected: boolean;
+    config: FirebaseConfig | null;
   };
 }
 
@@ -159,6 +164,10 @@ export async function streamText(props: {
         isConnected: options?.supabaseConnection?.isConnected || false,
         hasSelectedProject: options?.supabaseConnection?.hasSelectedProject || false,
         credentials: options?.supabaseConnection?.credentials || undefined,
+      },
+      firebase: {
+        isConnected: options?.firebaseConnection?.isConnected || false,
+        config: options?.firebaseConnection?.config || null,
       },
     }) ?? getSystemPrompt();
 

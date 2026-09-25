@@ -24,6 +24,7 @@ import { EventLogsTab } from '~/components/@settings/tabs/event-logs/EventLogsTa
 import GitHubTab from '~/components/@settings/tabs/github/GitHubTab';
 import GitLabTab from '~/components/@settings/tabs/gitlab/GitLabTab';
 import SupabaseTab from '~/components/@settings/tabs/supabase/SupabaseTab';
+import FirebaseTab from '~/components/@settings/tabs/firebase/FirebaseTab';
 import VercelTab from '~/components/@settings/tabs/vercel/VercelTab';
 import NetlifyTab from '~/components/@settings/tabs/netlify/NetlifyTab';
 import CloudProvidersTab from '~/components/@settings/tabs/providers/cloud/CloudProvidersTab';
@@ -143,6 +144,8 @@ export const ControlPanel = ({ open, onClose }: ControlPanelProps) => {
         return <GitLabTab />;
       case 'supabase':
         return <SupabaseTab />;
+      case 'firebase':
+        return <FirebaseTab />;
       case 'vercel':
         return <VercelTab />;
       case 'netlify':

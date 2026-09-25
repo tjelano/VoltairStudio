@@ -12,6 +12,7 @@ import { WORK_DIR } from '~/utils/constants';
 import { createSummary } from '~/lib/.server/llm/create-summary';
 import { extractPropertiesFromMessage } from '~/lib/.server/llm/utils';
 import type { DesignScheme } from '~/types/design-scheme';
+import type { FirebaseConfig } from '~/types/firebase';
 import { MCPService } from '~/lib/services/mcpService';
 import { StreamRecoveryManager } from '~/lib/.server/llm/stream-recovery';
 
@@ -48,7 +49,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
     },
   });
 
-  const { messages, files, promptId, contextOptimization, supabase, chatMode, designScheme, maxLLMSteps } =
+  const { messages, files, promptId, contextOptimization, supabase, firebase, chatMode, designScheme, maxLLMSteps } =
     await request.json<{
       messages: Messages;
       files: any;
@@ -63,6 +64,10 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
           anonKey?: string;
           supabaseUrl?: string;
         };
+      };
+      firebase?: {
+        isConnected: boolean;
+        config: FirebaseConfig | null;
       };
       maxLLMSteps: number;
     }>();
@@ -209,6 +214,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
 
         const options: StreamingOptions = {
           supabaseConnection: supabase,
+          firebaseConnection: firebase,
           toolChoice: 'auto',
           tools: mcpService.toolsWithoutExecute,
           maxSteps: maxLLMSteps,
