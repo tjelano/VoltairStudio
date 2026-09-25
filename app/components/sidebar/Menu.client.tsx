@@ -47,6 +47,7 @@ export const Menu = () => {
   const [dialogContent, setDialogContent] = useState<DialogContent>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const profile = useStore(profileStore);
+  const currentChatId = useStore(chatId);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [collapsed, setCollapsed] = useState(false);
@@ -241,6 +242,21 @@ export const Menu = () => {
   useEffect(() => {
     loadEntries();
   }, [loadEntries]);
+
+  /*
+   * Now-persistent sidebar no longer remounts on chat creation/navigation, so
+   * refresh the list once the new chat's write has had time to land. This
+   * doesn't catch a chat being renamed later (that never changes chatId).
+   */
+  useEffect(() => {
+    if (!currentChatId) {
+      return undefined;
+    }
+
+    const timeout = setTimeout(loadEntries, 500);
+
+    return () => clearTimeout(timeout);
+  }, [currentChatId, loadEntries]);
 
   const handleDuplicate = async (id: string) => {
     await duplicateCurrentChat(id);

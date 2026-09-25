@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ReferenceCard } from './ReferenceCard';
 import { PromptBuilder } from './PromptBuilder';
@@ -18,6 +18,7 @@ export function ReferencesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [importUrl, setImportUrl] = useState('');
   const [importing, setImporting] = useState(false);
+  const searchSeq = useRef(0);
 
   const refreshSaved = async () => {
     setSaved(await listReferences());
@@ -28,6 +29,7 @@ export function ReferencesPage() {
   }, []);
 
   const runSearch = async () => {
+    const seq = ++searchSeq.current;
     setSearching(true);
 
     try {
@@ -42,12 +44,17 @@ export function ReferencesPage() {
       }
 
       const data = (await response.json()) as InspoSearchResponse;
-      setResults(data.results ?? []);
+
+      if (seq === searchSeq.current) {
+        setResults(data.results ?? []);
+      }
     } catch (error) {
       toast.error('Search failed — is the dev server able to reach inspomcp.dev?');
       console.error(error);
     } finally {
-      setSearching(false);
+      if (seq === searchSeq.current) {
+        setSearching(false);
+      }
     }
   };
 
@@ -66,6 +73,7 @@ export function ReferencesPage() {
   };
 
   const persistReference = async (screen: InspoScreen) => {
+    const existing = saved.find((ref) => ref.id === screen.slug);
     await saveReference({
       id: screen.slug,
       slug: screen.slug,
@@ -76,8 +84,8 @@ export function ReferencesPage() {
       palette: screen.palette,
       northstar: screen.northstar,
       autopsy: screen.autopsy,
-      note: '',
-      savedAt: Date.now(),
+      note: existing?.note ?? '',
+      savedAt: existing?.savedAt ?? Date.now(),
     });
     await refreshSaved();
     toast.success(`Saved "${screen.title}"`);
@@ -124,8 +132,14 @@ export function ReferencesPage() {
   };
 
   const handleNoteChange = async (ref: SavedReference, note: string) => {
-    await saveReference({ ...ref, note });
     setSaved((prev) => prev.map((item) => (item.id === ref.id ? { ...item, note } : item)));
+
+    try {
+      await saveReference({ ...ref, note });
+    } catch (error) {
+      console.error(error);
+      toast.error('Could not save note');
+    }
   };
 
   const toggleSelected = (id: string) => {

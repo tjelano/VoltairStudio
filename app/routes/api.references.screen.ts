@@ -2,10 +2,17 @@ import { type ActionFunctionArgs } from '@remix-run/cloudflare';
 import { getInspoScreen } from '~/lib/services/inspoClient.server';
 
 function extractSlug(input: string): string {
-  const trimmed = input.trim().replace(/\/+$/, '');
-  const segments = trimmed.split('/');
+  let path = input.trim();
 
-  return segments[segments.length - 1];
+  try {
+    path = new URL(path).pathname;
+  } catch {
+    path = path.split(/[?#]/)[0];
+  }
+
+  const segments = path.replace(/\/+$/, '').split('/');
+
+  return decodeURIComponent(segments[segments.length - 1] ?? '');
 }
 
 export async function action({ request }: ActionFunctionArgs) {

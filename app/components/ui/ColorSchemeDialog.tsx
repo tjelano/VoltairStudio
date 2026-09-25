@@ -68,17 +68,34 @@ export const ColorSchemeDialog: React.FC<ColorSchemeDialogProps> = ({ setDesignS
         typeof value === 'object' && value !== null && !Array.isArray(value);
       const isStringArray = (value: unknown): value is string[] =>
         Array.isArray(value) && value.every((item) => typeof item === 'string');
+      const isHexColor = (value: unknown): value is string =>
+        typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value);
+
+      let applied = false;
 
       if (isPlainObject(parsed.palette)) {
-        setPalette((prev) => ({ ...prev, ...parsed.palette }));
+        const validColors = Object.fromEntries(
+          Object.entries(parsed.palette).filter((entry): entry is [string, string] => isHexColor(entry[1])),
+        );
+
+        if (Object.keys(validColors).length > 0) {
+          setPalette((prev) => ({ ...prev, ...validColors }));
+          applied = true;
+        }
       }
 
       if (isStringArray(parsed.features)) {
         setFeatures(parsed.features);
+        applied = true;
       }
 
       if (isStringArray(parsed.font)) {
         setFont(parsed.font);
+        applied = true;
+      }
+
+      if (!applied) {
+        throw new Error('No valid Design Scheme fields found');
       }
 
       toast.success('Applied — click Save Changes to keep it');
