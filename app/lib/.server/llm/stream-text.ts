@@ -40,12 +40,20 @@ const logger = createScopedLogger('stream-text');
  * prompt lines via embedded newlines. `unknown` input is deliberate: the value has crossed a
  * trust boundary (an unvalidated request body) by the time it reaches here.
  */
+/*
+ * Unicode line separator (U+2028) and paragraph separator (U+2029) are valid, unescaped
+ * line breaks inside a JS template literal, same class of gap as \r\n - built via
+ * fromCharCode rather than a literal escape so the source file itself never embeds one.
+ */
+const PROMPT_LINE_BREAK_CHARS = String.fromCharCode(0x2028, 0x2029);
+const UNSAFE_PROMPT_CHARS = new RegExp('[<>`\\r\\n' + PROMPT_LINE_BREAK_CHARS + ']|\\$\\{', 'g');
+
 function sanitizePromptValue(value: unknown): string | undefined {
   if (typeof value !== 'string') {
     return undefined;
   }
 
-  return value.replace(/[<>`\r\n]|\$\{/g, '').trim();
+  return value.replace(UNSAFE_PROMPT_CHARS, '').trim();
 }
 
 function sanitizeFirebaseConfig(config: unknown): FirebaseConfig | null {
