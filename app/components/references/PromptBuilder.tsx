@@ -1,19 +1,23 @@
 import { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import type { SavedReference } from '~/lib/persistence/referencesDb.client';
+import {
+  SetupChecklist,
+  EMPTY_SETUP_SELECTIONS,
+  useSetupConnectionStatus,
+  type SetupSelections,
+} from './SetupChecklist';
 
 interface PromptBuilderProps {
   selected: SavedReference[];
 }
 
-const DEPLOY_TARGETS = [
-  { value: '', label: 'No deployment target' },
-  { value: 'Vercel', label: 'Vercel' },
-  { value: 'Firebase', label: 'Firebase' },
-  { value: 'Netlify', label: 'Netlify' },
-] as const;
-
-function buildPrompt(brief: string, selected: SavedReference[], deployTarget: string): string {
+function buildPrompt(
+  brief: string,
+  selected: SavedReference[],
+  setup: SetupSelections,
+  connectionStatus: Record<string, boolean>,
+): string {
   const lines: string[] = [];
 
   if (brief.trim()) {
@@ -46,8 +50,29 @@ function buildPrompt(brief: string, selected: SavedReference[], deployTarget: st
     }
   }
 
-  if (deployTarget) {
-    lines.push('', `Build this to be deploy-ready for ${deployTarget}.`);
+  if (setup.framework) {
+    lines.push('', `Build this using ${setup.framework}.`);
+  }
+
+  if (setup.connections.length > 0) {
+    const connectedNow = setup.connections.filter((item) => connectionStatus[item]);
+    const notYetConnected = setup.connections.filter((item) => !connectionStatus[item]);
+
+    if (connectedNow.length > 0) {
+      lines.push('', `Wire up: ${connectedNow.join(', ')}.`);
+    }
+
+    if (notYetConnected.length > 0) {
+      lines.push('');
+
+      for (const item of notYetConnected) {
+        lines.push(`Note: not yet connected to ${item} — connect it in the chat box first.`);
+      }
+    }
+  }
+
+  if (setup.features.length > 0) {
+    lines.push('', `Also include: ${setup.features.join(', ')}.`);
   }
 
   return lines.join('\n');
@@ -55,8 +80,12 @@ function buildPrompt(brief: string, selected: SavedReference[], deployTarget: st
 
 export function PromptBuilder({ selected }: PromptBuilderProps) {
   const [brief, setBrief] = useState('');
-  const [deployTarget, setDeployTarget] = useState('');
-  const prompt = useMemo(() => buildPrompt(brief, selected, deployTarget), [brief, selected, deployTarget]);
+  const [setup, setSetup] = useState<SetupSelections>(EMPTY_SETUP_SELECTIONS);
+  const connectionStatus = useSetupConnectionStatus();
+  const prompt = useMemo(
+    () => buildPrompt(brief, selected, setup, connectionStatus),
+    [brief, selected, setup, connectionStatus],
+  );
   const paletteSource = selected.find((ref) => ref.palette && ref.palette.length > 0);
 
   const copyPrompt = async () => {
@@ -107,17 +136,9 @@ export function PromptBuilder({ selected }: PromptBuilderProps) {
           className="flex-1 p-2.5 rounded-lg border border-bolt-elements-borderColor bg-bolt-elements-background-depth-1 resize-none focus:outline-none focus:ring-1 focus:ring-purple-500/50"
           rows={2}
         />
-        <select
-          value={deployTarget}
-          onChange={(event) => setDeployTarget(event.target.value)}
-          className="p-2.5 rounded-lg border border-bolt-elements-borderColor bg-bolt-elements-background-depth-1 text-sm sm:w-48 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
-        >
-          {DEPLOY_TARGETS.map((target) => (
-            <option key={target.value} value={target.value}>
-              {target.label}
-            </option>
-          ))}
-        </select>
+      </div>
+      <div>
+        <SetupChecklist selections={setup} onChange={setSetup} />
       </div>
       <textarea
         value={prompt}
