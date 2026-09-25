@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ReferenceCard } from './ReferenceCard';
 import { PromptBuilder } from './PromptBuilder';
-import type { InspoScreen, InspoSearchResponse } from './types';
+import { SearchFilters } from './SearchFilters';
+import { EMPTY_SEARCH_FILTERS, type InspoScreen, type InspoSearchResponse, type SearchFilterSelections } from './types';
 import {
   listReferences,
   saveReference,
@@ -12,6 +13,7 @@ import {
 
 export function ReferencesPage() {
   const [query, setQuery] = useState('');
+  const [filters, setFilters] = useState<SearchFilterSelections>(EMPTY_SEARCH_FILTERS);
   const [results, setResults] = useState<InspoScreen[]>([]);
   const [searching, setSearching] = useState(false);
   const [saved, setSaved] = useState<SavedReference[]>([]);
@@ -33,10 +35,12 @@ export function ReferencesPage() {
     setSearching(true);
 
     try {
+      const activeFilters = Object.fromEntries(Object.entries(filters).filter(([, value]) => value !== ''));
+
       const response = await fetch('/api/references/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, ...activeFilters }),
       });
 
       if (!response.ok) {
@@ -183,6 +187,7 @@ export function ReferencesPage() {
               placeholder="e.g. minimalist editorial agency portfolio"
               className="flex-1 p-2.5 rounded-lg border border-bolt-elements-borderColor bg-bolt-elements-background-depth-1 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
             />
+            <SearchFilters selections={filters} onChange={setFilters} />
             <button
               onClick={runSearch}
               disabled={searching}

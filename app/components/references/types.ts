@@ -17,3 +17,27 @@ export interface InspoSearchResponse {
   count: number;
   results: InspoScreen[];
 }
+
+export interface InspoFilters {
+  style: string[];
+  industry: string[];
+  vibe: string[];
+  color: string[];
+  pageType: string[];
+}
+
+export interface SearchFilterSelections {
+  style: string;
+  industry: string;
+  vibe: string;
+  color: string;
+  pageType: string;
+}
+
+export const EMPTY_SEARCH_FILTERS: SearchFilterSelections = {
+  style: '',
+  industry: '',
+  vibe: '',
+  color: '',
+  pageType: '',
+};
