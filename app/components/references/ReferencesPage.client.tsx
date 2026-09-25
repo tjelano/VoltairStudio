@@ -49,7 +49,10 @@ export function ReferencesPage() {
         setResults(data.results ?? []);
       }
     } catch (error) {
-      toast.error('Search failed — is the dev server able to reach inspomcp.dev?');
+      if (seq === searchSeq.current) {
+        toast.error('Search failed — is the dev server able to reach inspomcp.dev?');
+      }
+
       console.error(error);
     } finally {
       if (seq === searchSeq.current) {
