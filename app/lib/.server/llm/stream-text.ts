@@ -31,6 +31,32 @@ export interface StreamingOptions extends Omit<Parameters<typeof _streamText>[0]
 
 const logger = createScopedLogger('stream-text');
 
+/**
+ * Firebase config values are pasted by the user (or sent directly to this API) and get
+ * interpolated into the system prompt template as plain text inside an XML-like tag.
+ * None of Firebase's real config fields ever legitimately contain these characters, so
+ * stripping them closes off breaking out of the <firebase_instructions> block or the
+ * template string itself (backticks, ${...}) rather than just escaping for display.
+ */
+function sanitizeFirebaseValue<T extends string | undefined>(value: T): T {
+  return value?.replace(/[<>`]|\$\{/g, '') as T;
+}
+
+function sanitizeFirebaseConfig(config: FirebaseConfig | null | undefined): FirebaseConfig | null {
+  if (!config) {
+    return null;
+  }
+
+  return {
+    apiKey: sanitizeFirebaseValue(config.apiKey) ?? '',
+    projectId: sanitizeFirebaseValue(config.projectId) ?? '',
+    appId: sanitizeFirebaseValue(config.appId) ?? '',
+    authDomain: sanitizeFirebaseValue(config.authDomain),
+    storageBucket: sanitizeFirebaseValue(config.storageBucket),
+    messagingSenderId: sanitizeFirebaseValue(config.messagingSenderId),
+  };
+}
+
 function getCompletionTokenLimit(modelDetails: any): number {
   // 1. If model specifies completion tokens, use that
   if (modelDetails.maxCompletionTokens && modelDetails.maxCompletionTokens > 0) {
@@ -167,7 +193,7 @@ export async function streamText(props: {
       },
       firebase: {
         isConnected: options?.firebaseConnection?.isConnected || false,
-        config: options?.firebaseConnection?.config || null,
+        config: sanitizeFirebaseConfig(options?.firebaseConnection?.config),
       },
     }) ?? getSystemPrompt();
 
