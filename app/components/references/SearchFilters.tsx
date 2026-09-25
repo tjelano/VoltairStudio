@@ -10,13 +10,28 @@ const FILTER_GROUPS: { key: keyof SearchFilterSelections; label: string }[] = [
   { key: 'pageType', label: 'Page Type' },
 ];
 
-const KNOWN_ACRONYMS = new Set(['ai']);
+const KNOWN_ACRONYMS: Record<string, string> = { ai: 'AI', saas: 'SaaS' };
 
 function formatLabel(value: string): string {
   return value
     .split('-')
-    .map((word) => (KNOWN_ACRONYMS.has(word) ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1)))
+    .map((word) => KNOWN_ACRONYMS[word] ?? word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+const FILTER_KEYS: (keyof InspoFilters)[] = ['style', 'industry', 'vibe', 'color', 'pageType'];
+
+function isValidInspoFilters(data: unknown): data is InspoFilters {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+
+  const record = data as Record<string, unknown>;
+
+  return FILTER_KEYS.every((key) => {
+    const value = record[key];
+    return Array.isArray(value) && value.every((item: unknown) => typeof item === 'string');
+  });
 }
 
 interface SearchFiltersProps {
@@ -27,23 +42,31 @@ interface SearchFiltersProps {
 export function SearchFilters({ selections, onChange }: SearchFiltersProps) {
   const [filters, setFilters] = useState<InspoFilters | null>(null);
   const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setFailed(false);
 
     fetch('/api/references/filters')
       .then((response) => (response.ok ? response.json() : Promise.reject(new Error(response.statusText))))
       .then((data: unknown) => {
-        if (!cancelled) {
-          setFilters(data as InspoFilters);
+        if (cancelled) {
+          return;
+        }
+
+        if (isValidInspoFilters(data)) {
+          setFilters(data);
+        } else {
+          setFailed(true);
         }
       })
       .catch(() => {
-        /*
-         * Filters are a nice-to-have on top of free-text search — fail silently, leave the
-         * dropdown showing "Loading..." rather than blocking or erroring the whole page.
-         */
+        if (!cancelled) {
+          setFailed(true);
+        }
       })
       .finally(() => {
         if (!cancelled) {
@@ -54,7 +77,7 @@ export function SearchFilters({ selections, onChange }: SearchFiltersProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [retryCount]);
 
   const totalSelected = Object.values(selections).filter(Boolean).length;
 
@@ -77,6 +100,17 @@ export function SearchFilters({ selections, onChange }: SearchFiltersProps) {
       <div className="max-h-[70vh] overflow-y-auto w-72">
         {loading && !filters && (
           <div className="px-3 py-2 text-sm text-bolt-elements-textTertiary">Loading filters...</div>
+        )}
+        {failed && !loading && !filters && (
+          <div className="px-3 py-2 flex flex-col gap-2">
+            <div className="text-sm text-bolt-elements-textSecondary">Couldn't load filters.</div>
+            <DropdownItem
+              onSelect={() => setRetryCount((count) => count + 1)}
+              className="justify-center text-accent-500"
+            >
+              Retry
+            </DropdownItem>
+          </div>
         )}
         {filters &&
           FILTER_GROUPS.map((group, index) => (
