@@ -1,13 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from '@nanostores/react';
 import { toast } from 'react-toastify';
 import { classNames } from '~/utils/classNames';
-import { firebaseConnection, updateFirebaseConnection, parseFirebaseConfig } from '~/lib/stores/firebase';
+import {
+  firebaseConnection,
+  updateFirebaseConnection,
+  initializeFirebaseConnection,
+  parseFirebaseConfig,
+} from '~/lib/stores/firebase';
 
 export default function FirebaseTab() {
   const connection = useStore(firebaseConnection);
   const [configText, setConfigText] = useState('');
   const isConnected = !!(connection.isConnected && connection.config);
+
+  useEffect(() => {
+    initializeFirebaseConnection();
+  }, []);
 
   const handleConnect = () => {
     const parsed = parseFirebaseConfig(configText);

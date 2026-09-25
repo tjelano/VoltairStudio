@@ -32,28 +32,43 @@ export interface StreamingOptions extends Omit<Parameters<typeof _streamText>[0]
 const logger = createScopedLogger('stream-text');
 
 /**
- * Firebase config values are pasted by the user (or sent directly to this API) and get
- * interpolated into the system prompt template as plain text inside an XML-like tag.
- * None of Firebase's real config fields ever legitimately contain these characters, so
- * stripping them closes off breaking out of the <firebase_instructions> block or the
- * template string itself (backticks, ${...}) rather than just escaping for display.
+ * Values from Firebase/Supabase connection state are pasted by the user or sent directly to
+ * this API (the request body's shape is only TS-asserted, never runtime-validated) and get
+ * interpolated into the system prompt template as plain text inside an XML-like tag. None of
+ * these fields ever legitimately contain <, >, backtick, ${, or line breaks, so stripping them
+ * closes off both breaking out of the surrounding tag/template string and injecting extra
+ * prompt lines via embedded newlines. `unknown` input is deliberate: the value has crossed a
+ * trust boundary (an unvalidated request body) by the time it reaches here.
  */
-function sanitizeFirebaseValue<T extends string | undefined>(value: T): T {
-  return value?.replace(/[<>`]|\$\{/g, '') as T;
+function sanitizePromptValue(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  return value.replace(/[<>`\r\n]|\$\{/g, '').trim();
 }
 
-function sanitizeFirebaseConfig(config: FirebaseConfig | null | undefined): FirebaseConfig | null {
-  if (!config) {
+function sanitizeFirebaseConfig(config: unknown): FirebaseConfig | null {
+  if (!config || typeof config !== 'object') {
+    return null;
+  }
+
+  const source = config as Record<string, unknown>;
+  const apiKey = sanitizePromptValue(source.apiKey);
+  const projectId = sanitizePromptValue(source.projectId);
+  const appId = sanitizePromptValue(source.appId);
+
+  if (!apiKey || !projectId || !appId) {
     return null;
   }
 
   return {
-    apiKey: sanitizeFirebaseValue(config.apiKey) ?? '',
-    projectId: sanitizeFirebaseValue(config.projectId) ?? '',
-    appId: sanitizeFirebaseValue(config.appId) ?? '',
-    authDomain: sanitizeFirebaseValue(config.authDomain),
-    storageBucket: sanitizeFirebaseValue(config.storageBucket),
-    messagingSenderId: sanitizeFirebaseValue(config.messagingSenderId),
+    apiKey,
+    projectId,
+    appId,
+    authDomain: sanitizePromptValue(source.authDomain),
+    storageBucket: sanitizePromptValue(source.storageBucket),
+    messagingSenderId: sanitizePromptValue(source.messagingSenderId),
   };
 }
 
@@ -189,7 +204,12 @@ export async function streamText(props: {
       supabase: {
         isConnected: options?.supabaseConnection?.isConnected || false,
         hasSelectedProject: options?.supabaseConnection?.hasSelectedProject || false,
-        credentials: options?.supabaseConnection?.credentials || undefined,
+        credentials: options?.supabaseConnection?.credentials
+          ? {
+              anonKey: sanitizePromptValue(options.supabaseConnection.credentials.anonKey),
+              supabaseUrl: sanitizePromptValue(options.supabaseConnection.credentials.supabaseUrl),
+            }
+          : undefined,
       },
       firebase: {
         isConnected: options?.firebaseConnection?.isConnected || false,
