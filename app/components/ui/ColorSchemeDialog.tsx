@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { Dialog, DialogTitle, DialogDescription, DialogRoot } from './Dialog';
 import { Button } from './Button';
 import { IconButton } from './IconButton';
@@ -59,6 +60,50 @@ export const ColorSchemeDialog: React.FC<ColorSchemeDialogProps> = ({ setDesignS
     setFont(defaultDesignScheme.font);
   };
 
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const parsed = JSON.parse(text) as Partial<DesignScheme>;
+      const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+        typeof value === 'object' && value !== null && !Array.isArray(value);
+      const isStringArray = (value: unknown): value is string[] =>
+        Array.isArray(value) && value.every((item) => typeof item === 'string');
+      const isHexColor = (value: unknown): value is string =>
+        typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value);
+
+      let applied = false;
+
+      if (isPlainObject(parsed.palette)) {
+        const validColors = Object.fromEntries(
+          Object.entries(parsed.palette).filter((entry): entry is [string, string] => isHexColor(entry[1])),
+        );
+
+        if (Object.keys(validColors).length > 0) {
+          setPalette((prev) => ({ ...prev, ...validColors }));
+          applied = true;
+        }
+      }
+
+      if (isStringArray(parsed.features)) {
+        setFeatures(parsed.features);
+        applied = true;
+      }
+
+      if (isStringArray(parsed.font)) {
+        setFont(parsed.font);
+        applied = true;
+      }
+
+      if (!applied) {
+        throw new Error('No valid Design Scheme fields found');
+      }
+
+      toast.success('Applied — click Save Changes to keep it');
+    } catch {
+      toast.error('Clipboard does not contain a valid Design Scheme');
+    }
+  };
+
   const renderColorSection = () => (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -66,13 +111,23 @@ export const ColorSchemeDialog: React.FC<ColorSchemeDialogProps> = ({ setDesignS
           <div className="w-2 h-2 rounded-full bg-bolt-elements-item-contentAccent"></div>
           Color Palette
         </h3>
-        <button
-          onClick={handleReset}
-          className="text-sm bg-transparent hover:bg-bolt-elements-bg-depth-2 text-bolt-elements-textSecondary hover:text-bolt-elements-textPrimary rounded-lg flex items-center gap-2 transition-all duration-200"
-        >
-          <span className="i-ph:arrow-clockwise text-sm" />
-          Reset
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handlePaste}
+            className="text-sm bg-transparent hover:bg-bolt-elements-bg-depth-2 text-bolt-elements-textSecondary hover:text-bolt-elements-textPrimary rounded-lg flex items-center gap-2 transition-all duration-200"
+            title="Paste a Design Scheme copied from the References page"
+          >
+            <span className="i-ph:clipboard-text text-sm" />
+            Paste
+          </button>
+          <button
+            onClick={handleReset}
+            className="text-sm bg-transparent hover:bg-bolt-elements-bg-depth-2 text-bolt-elements-textSecondary hover:text-bolt-elements-textPrimary rounded-lg flex items-center gap-2 transition-all duration-200"
+          >
+            <span className="i-ph:arrow-clockwise text-sm" />
+            Reset
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
