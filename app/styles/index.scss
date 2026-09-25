@@ -7,21 +7,40 @@
 @use 'components/editor.scss';
 @use 'components/toast.scss';
 
+// VoltairStudio type — Sentient (display) / Satoshi (body), ported from
+// GameForge's dashboard visual refresh as self-hosted variable fonts.
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-Variable.woff2') format('woff2');
+  font-weight: 300 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sentient';
+  src: url('/fonts/Sentient-Variable.woff2') format('woff2');
+  font-weight: 300 900;
+  font-display: swap;
+}
+
+:root {
+  --font-body: 'Satoshi', -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Sentient', Georgia, serif;
+}
+
 html,
 body {
   height: 100%;
   width: 100%;
   background-color: var(--bolt-elements-bg-depth-1);
+  font-family: var(--font-body);
 }
 
 :root {
   --gradient-opacity: 0.8;
-  --primary-color: rgba(158, 117, 240, var(--gradient-opacity));
-  --secondary-color: rgba(138, 43, 226, var(--gradient-opacity));
-  --accent-color: rgba(128, 59, 239, var(--gradient-opacity));
-  // --primary-color: rgba(147, 112, 219, var(--gradient-opacity));
-  // --secondary-color: rgba(138, 43, 226, var(--gradient-opacity));
-  // --accent-color: rgba(180, 170, 220, var(--gradient-opacity));
+  --primary-color: rgba(255, 79, 0, var(--gradient-opacity));
+  --secondary-color: rgba(255, 106, 43, var(--gradient-opacity));
+  --accent-color: rgba(194, 58, 0, var(--gradient-opacity));
 }
 
 .modern-scrollbar {

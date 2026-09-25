@@ -10,6 +10,7 @@ import { createScopedLogger } from '~/utils/logger';
 import { createFilesContext, extractPropertiesFromMessage } from './utils';
 import { discussPrompt } from '~/lib/common/prompts/discuss-prompt';
 import type { DesignScheme } from '~/types/design-scheme';
+import type { FirebaseConfig } from '~/types/firebase';
 
 export type Messages = Message[];
 
@@ -22,9 +23,62 @@ export interface StreamingOptions extends Omit<Parameters<typeof _streamText>[0]
       supabaseUrl?: string;
     };
   };
+  firebaseConnection?: {
+    isConnected: boolean;
+    config: FirebaseConfig | null;
+  };
 }
 
 const logger = createScopedLogger('stream-text');
+
+/**
+ * Values from Firebase/Supabase connection state are pasted by the user or sent directly to
+ * this API (the request body's shape is only TS-asserted, never runtime-validated) and get
+ * interpolated into the system prompt template as plain text inside an XML-like tag. None of
+ * these fields ever legitimately contain <, >, backtick, ${, or line breaks, so stripping them
+ * closes off both breaking out of the surrounding tag/template string and injecting extra
+ * prompt lines via embedded newlines. `unknown` input is deliberate: the value has crossed a
+ * trust boundary (an unvalidated request body) by the time it reaches here.
+ */
+/*
+ * Unicode line separator (U+2028) and paragraph separator (U+2029) are valid, unescaped
+ * line breaks inside a JS template literal, same class of gap as \r\n - built via
+ * fromCharCode rather than a literal escape so the source file itself never embeds one.
+ */
+const PROMPT_LINE_BREAK_CHARS = String.fromCharCode(0x2028, 0x2029);
+const UNSAFE_PROMPT_CHARS = new RegExp('[<>`\\r\\n' + PROMPT_LINE_BREAK_CHARS + ']|\\$\\{', 'g');
+
+function sanitizePromptValue(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  return value.replace(UNSAFE_PROMPT_CHARS, '').trim();
+}
+
+function sanitizeFirebaseConfig(config: unknown): FirebaseConfig | null {
+  if (!config || typeof config !== 'object') {
+    return null;
+  }
+
+  const source = config as Record<string, unknown>;
+  const apiKey = sanitizePromptValue(source.apiKey);
+  const projectId = sanitizePromptValue(source.projectId);
+  const appId = sanitizePromptValue(source.appId);
+
+  if (!apiKey || !projectId || !appId) {
+    return null;
+  }
+
+  return {
+    apiKey,
+    projectId,
+    appId,
+    authDomain: sanitizePromptValue(source.authDomain),
+    storageBucket: sanitizePromptValue(source.storageBucket),
+    messagingSenderId: sanitizePromptValue(source.messagingSenderId),
+  };
+}
 
 function getCompletionTokenLimit(modelDetails: any): number {
   // 1. If model specifies completion tokens, use that
@@ -158,7 +212,16 @@ export async function streamText(props: {
       supabase: {
         isConnected: options?.supabaseConnection?.isConnected || false,
         hasSelectedProject: options?.supabaseConnection?.hasSelectedProject || false,
-        credentials: options?.supabaseConnection?.credentials || undefined,
+        credentials: options?.supabaseConnection?.credentials
+          ? {
+              anonKey: sanitizePromptValue(options.supabaseConnection.credentials.anonKey),
+              supabaseUrl: sanitizePromptValue(options.supabaseConnection.credentials.supabaseUrl),
+            }
+          : undefined,
+      },
+      firebase: {
+        isConnected: options?.firebaseConnection?.isConnected || false,
+        config: sanitizeFirebaseConfig(options?.firebaseConnection?.config),
       },
     }) ?? getSystemPrompt();
 

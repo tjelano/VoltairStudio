@@ -38,6 +38,11 @@ const SupabaseIcon = () => (
   </svg>
 );
 
+// Firebase icon component
+const FirebaseIcon = () => (
+  <img src="https://cdn.simpleicons.org/firebase" className="w-4 h-4" crossOrigin="anonymous" />
+);
+
 export const TAB_ICONS: Record<TabType, React.ComponentType<{ className?: string }>> = {
   profile: User,
   settings: Settings,
@@ -51,6 +56,7 @@ export const TAB_ICONS: Record<TabType, React.ComponentType<{ className?: string
   netlify: () => <NetlifyIcon />,
   vercel: () => <VercelIcon />,
   supabase: () => <SupabaseIcon />,
+  firebase: () => <FirebaseIcon />,
   'event-logs': List,
   mcp: Wrench,
 };
@@ -68,6 +74,7 @@ export const TAB_LABELS: Record<TabType, string> = {
   netlify: 'Netlify',
   vercel: 'Vercel',
   supabase: 'Supabase',
+  firebase: 'Firebase',
   'event-logs': 'Event Logs',
   mcp: 'MCP Servers',
 };
@@ -85,6 +92,7 @@ export const TAB_DESCRIPTIONS: Record<TabType, string> = {
   netlify: 'Configure Netlify deployment settings',
   vercel: 'Manage Vercel projects and deployments',
   supabase: 'Setup Supabase database connection',
+  firebase: 'Setup Firebase project connection',
   'event-logs': 'View system events and logs',
   mcp: 'Configure MCP (Model Context Protocol) servers',
 };
@@ -100,9 +108,10 @@ export const DEFAULT_TAB_CONFIG = [
   { id: 'netlify', visible: true, window: 'user' as const, order: 6 },
   { id: 'vercel', visible: true, window: 'user' as const, order: 7 },
   { id: 'supabase', visible: true, window: 'user' as const, order: 8 },
-  { id: 'notifications', visible: true, window: 'user' as const, order: 9 },
-  { id: 'event-logs', visible: true, window: 'user' as const, order: 10 },
-  { id: 'mcp', visible: true, window: 'user' as const, order: 11 },
+  { id: 'firebase', visible: true, window: 'user' as const, order: 9 },
+  { id: 'notifications', visible: true, window: 'user' as const, order: 10 },
+  { id: 'event-logs', visible: true, window: 'user' as const, order: 11 },
+  { id: 'mcp', visible: true, window: 'user' as const, order: 12 },
 
   // User Window Tabs (In dropdown, initially hidden)
 ];

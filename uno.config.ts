@@ -31,21 +31,49 @@ const BASE_COLORS = {
     600: '#525252',
     700: '#404040',
     800: '#262626',
-    900: '#171717',
+    900: '#121212',
     950: '#0A0A0A',
   },
+
+  /*
+   * "Persimmon" accent, ported from GameForge's dashboard visual refresh
+   * (docs/superpowers/specs/2026-09-14-dashboard-visual-refresh-design.md
+   * in the GameForge repo). 400/500/700 are the real shipped anchor values
+   * (accent-bright/accent/accent-dim); the rest are interpolated to fill
+   * out the same 50-950 scale shape the rest of this file expects.
+   */
   accent: {
-    50: '#F8F5FF',
-    100: '#F0EBFF',
-    200: '#E1D6FF',
-    300: '#CEBEFF',
-    400: '#B69EFF',
-    500: '#9C7DFF',
-    600: '#8A5FFF',
-    700: '#7645E8',
-    800: '#6234BB',
-    900: '#502D93',
-    950: '#2D1959',
+    50: '#FFF3EC',
+    100: '#FFE1D0',
+    200: '#FFC3A1',
+    300: '#FF9D6B',
+    400: '#FF6A2B',
+    500: '#FF4F00',
+    600: '#E64700',
+    700: '#C23A00',
+    800: '#9C2F00',
+    900: '#7A2500',
+    950: '#4D1700',
+  },
+
+  /*
+   * A large number of components hardcode Tailwind's literal `purple-*`
+   * classes directly (bg-purple-50, text-purple-700, etc.) instead of the
+   * `accent`/`bolt-elements-*` tokens above. Aliasing `purple` to the same
+   * scale here re-themes all of them without touching ~40 files individually.
+   */
+  purple: {
+    50: '#FFF3EC',
+    100: '#FFE1D0',
+    200: '#FFC3A1',
+    300: '#FF9D6B',
+    400: '#FF6A2B',
+    500: '#FF4F00',
+    600: '#E64700',
+    700: '#C23A00',
+    800: '#9C2F00',
+    900: '#7A2500',
+    950: '#4D1700',
   },
   green: {
     50: '#F0FDF4',

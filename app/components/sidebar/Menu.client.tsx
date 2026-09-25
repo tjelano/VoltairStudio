@@ -316,9 +316,12 @@ export const Menu = () => {
               />
             </button>
             {!collapsed && (
-              <a href="/" className="flex items-center">
-                <img src="/logo-light-styled.png" alt="logo" className="w-[90px] inline-block dark:hidden" />
-                <img src="/logo-dark-styled.png" alt="logo" className="w-[90px] inline-block hidden dark:block" />
+              <a
+                href="/"
+                className="flex items-center text-lg font-bold text-bolt-elements-textPrimary"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Voltair<span className="text-accent-500">Studio</span>
               </a>
             )}
           </div>

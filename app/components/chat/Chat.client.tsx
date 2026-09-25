@@ -23,6 +23,7 @@ import { logStore } from '~/lib/stores/logs';
 import { streamingState } from '~/lib/stores/streaming';
 import { filesToArtifacts } from '~/utils/fileUtils';
 import { supabaseConnection } from '~/lib/stores/supabase';
+import { firebaseConnection } from '~/lib/stores/firebase';
 import { defaultDesignScheme, type DesignScheme } from '~/types/design-scheme';
 import type { ElementInfo } from '~/components/workbench/Inspector';
 import type { TextUIPart, FileUIPart, Attachment } from '@ai-sdk/ui-utils';
@@ -99,6 +100,7 @@ export const ChatImpl = memo(
     const selectedProject = supabaseConn.stats?.projects?.find(
       (project) => project.id === supabaseConn.selectedProjectId,
     );
+    const firebaseConn = useStore(firebaseConnection);
     const supabaseAlert = useStore(workbenchStore.supabaseAlert);
     const { activeProviders, promptId, autoSelectTemplate, contextOptimizationEnabled } = useSettings();
     const [llmErrorAlert, setLlmErrorAlert] = useState<LlmErrorAlertType | undefined>(undefined);
@@ -147,6 +149,10 @@ export const ChatImpl = memo(
             supabaseUrl: supabaseConn?.credentials?.supabaseUrl,
             anonKey: supabaseConn?.credentials?.anonKey,
           },
+        },
+        firebase: {
+          isConnected: !!(firebaseConn.isConnected && firebaseConn.config),
+          config: firebaseConn.config,
         },
         maxLLMSteps: mcpSettings.maxLLMSteps,
       },
