@@ -33,3 +33,20 @@ export const HelpButton = memo(({ onClick }: HelpButtonProps) => {
     />
   );
 });
+
+interface ReferencesButtonProps {
+  onClick: () => void;
+}
+
+export const ReferencesButton = memo(({ onClick }: ReferencesButtonProps) => {
+  return (
+    <IconButton
+      onClick={onClick}
+      icon="i-ph:image"
+      size="xl"
+      title="References"
+      data-testid="references-button"
+      className="text-[#666] hover:text-bolt-elements-textPrimary hover:bg-bolt-elements-item-backgroundActive/10 transition-colors"
+    />
+  );
+});
