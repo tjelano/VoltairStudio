@@ -170,7 +170,7 @@ export function ReferencesPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-bolt-elements-textPrimary mb-2">References</h1>
           <p className="text-bolt-elements-textSecondary">
             Search Inspo's archive of real production sites, save the ones you like, and build a grounded prompt to hand
-            to Bolt.
+            to VoltairStudio.
           </p>
         </div>
 
