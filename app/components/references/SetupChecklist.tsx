@@ -1,6 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useStore } from '@nanostores/react';
-import { Dropdown, DropdownItem, DropdownCheckboxItem, DropdownSeparator } from '~/components/ui/Dropdown';
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownCheckboxItem,
+  DropdownRadioItem,
+  DropdownSeparator,
+} from '~/components/ui/Dropdown';
 import { classNames } from '~/utils/classNames';
 import { supabaseConnection } from '~/lib/stores/supabase';
 import { firebaseConnection, initializeFirebaseConnection } from '~/lib/stores/firebase';
@@ -147,21 +153,15 @@ export function SetupChecklist({ selections, onChange }: SetupChecklistProps) {
         <div className="px-3 py-1.5 text-xs font-semibold text-bolt-elements-textTertiary uppercase tracking-wide">
           Framework — pick one
         </div>
-        <div className="flex flex-wrap gap-1.5 px-3 pb-2">
+        <div role="radiogroup" aria-label="Framework" className="flex flex-wrap gap-1.5 px-3 pb-2">
           {FRAMEWORK_OPTIONS.map((option) => (
-            <button
+            <DropdownRadioItem
               key={option}
-              type="button"
-              onClick={() => onChange({ ...selections, framework: selections.framework === option ? '' : option })}
-              className={classNames(
-                'px-2.5 py-1 rounded-md text-xs border transition-colors',
-                selections.framework === option
-                  ? 'bg-accent-500 border-accent-500 text-white'
-                  : 'border-bolt-elements-borderColor text-bolt-elements-textSecondary hover:bg-bolt-elements-background-depth-3',
-              )}
+              checked={selections.framework === option}
+              onSelect={() => onChange({ ...selections, framework: selections.framework === option ? '' : option })}
             >
               {option}
-            </button>
+            </DropdownRadioItem>
           ))}
         </div>
 

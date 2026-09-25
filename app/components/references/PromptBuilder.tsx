@@ -62,8 +62,12 @@ function buildPrompt(
       lines.push('', `Wire up: ${connectedNow.join(', ')}.`);
     }
 
-    for (const item of notYetConnected) {
-      lines.push(`Note: not yet connected to ${item} — connect it in the chat box first.`);
+    if (notYetConnected.length > 0) {
+      lines.push('');
+
+      for (const item of notYetConnected) {
+        lines.push(`Note: not yet connected to ${item} — connect it in the chat box first.`);
+      }
     }
   }
 
