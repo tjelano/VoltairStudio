@@ -9,14 +9,15 @@ function extractSlug(input: string): string {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { slugOrUrl } = await request.json<{ slugOrUrl: string }>();
-
-  if (!slugOrUrl?.trim()) {
-    return Response.json({ error: 'Missing slug or URL' }, { status: 400 });
-  }
-
   try {
+    const { slugOrUrl } = await request.json<{ slugOrUrl: string }>();
+
+    if (!slugOrUrl?.trim()) {
+      return Response.json({ error: 'Missing slug or URL' }, { status: 400 });
+    }
+
     const result = await getInspoScreen(extractSlug(slugOrUrl));
+
     return Response.json(result);
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : 'Lookup failed' }, { status: 500 });

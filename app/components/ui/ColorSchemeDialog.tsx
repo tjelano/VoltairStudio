@@ -64,16 +64,20 @@ export const ColorSchemeDialog: React.FC<ColorSchemeDialogProps> = ({ setDesignS
     try {
       const text = await navigator.clipboard.readText();
       const parsed = JSON.parse(text) as Partial<DesignScheme>;
+      const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+        typeof value === 'object' && value !== null && !Array.isArray(value);
+      const isStringArray = (value: unknown): value is string[] =>
+        Array.isArray(value) && value.every((item) => typeof item === 'string');
 
-      if (parsed.palette) {
+      if (isPlainObject(parsed.palette)) {
         setPalette((prev) => ({ ...prev, ...parsed.palette }));
       }
 
-      if (parsed.features) {
+      if (isStringArray(parsed.features)) {
         setFeatures(parsed.features);
       }
 
-      if (parsed.font) {
+      if (isStringArray(parsed.font)) {
         setFont(parsed.font);
       }
 
