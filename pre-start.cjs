@@ -16,7 +16,7 @@ let commitJson = {
 
 console.log(`
 ★═══════════════════════════════════════★
-          B O L T . D I Y
+        V O L T A I R S T U D I O
          ⚡️  Welcome  ⚡️
 ★═══════════════════════════════════════★
 `);

@@ -4,19 +4,26 @@ export interface DesignScheme {
   font: string[];
 }
 
+/*
+ * VoltairStudio's own "Persimmon / Obsidian" identity, ported from
+ * GameForge's dashboard visual refresh, as the default suggested to the AI
+ * for generated sites (still just a starting point — fully editable via
+ * the Design Palette dialog, or overridden by a real Inspo reference via
+ * the References page's "Copy as Design Scheme" button).
+ */
 export const defaultDesignScheme: DesignScheme = {
   palette: {
-    primary: '#9E7FFF',
-    secondary: '#38bdf8',
-    accent: '#f472b6',
-    background: '#171717',
-    surface: '#262626',
-    text: '#FFFFFF',
-    textSecondary: '#A3A3A3',
-    border: '#2F2F2F',
-    success: '#10b981',
+    primary: '#FF4F00',
+    secondary: '#4FA8D8',
+    accent: '#FF6A2B',
+    background: '#0A0A0A',
+    surface: '#121212',
+    text: '#EDEDED',
+    textSecondary: '#9A9A9A',
+    border: '#262626',
+    success: '#8ea885',
     warning: '#f59e0b',
-    error: '#ef4444',
+    error: '#c46a4f',
   },
   features: ['rounded'],
   font: ['sans-serif'],
