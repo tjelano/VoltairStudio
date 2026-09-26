@@ -24,6 +24,7 @@ export function ReferencesPage() {
   const [previewScreen, setPreviewScreen] = useState<InspoScreen | null>(null);
   const [previewLoadingMore, setPreviewLoadingMore] = useState(false);
   const searchSeq = useRef(0);
+  const previewSeq = useRef(0);
 
   const refreshSaved = async () => {
     setSaved(await listReferences());
@@ -141,11 +142,17 @@ export function ReferencesPage() {
     await refreshSaved();
 
     if (previewScreen?.slug === id) {
-      setPreviewScreen(null);
+      closePreview();
     }
   };
 
+  const closePreview = () => {
+    previewSeq.current += 1;
+    setPreviewScreen(null);
+  };
+
   const handlePreview = async (screen: InspoScreen) => {
+    const seq = ++previewSeq.current;
     const existing = saved.find((ref) => ref.id === screen.slug);
 
     if (existing) {
@@ -166,11 +173,17 @@ export function ReferencesPage() {
 
     try {
       const full = await fetchFullScreen(screen.slug);
-      setPreviewScreen(full);
+
+      // Ignore a stale response if the modal was closed or a different card previewed meanwhile.
+      if (seq === previewSeq.current) {
+        setPreviewScreen(full);
+      }
     } catch (error) {
       console.error(error);
     } finally {
-      setPreviewLoadingMore(false);
+      if (seq === previewSeq.current) {
+        setPreviewLoadingMore(false);
+      }
     }
   };
 
@@ -327,11 +340,11 @@ export function ReferencesPage() {
         screen={previewScreen}
         loadingMore={previewLoadingMore}
         saved={previewSaved}
-        onClose={() => setPreviewScreen(null)}
+        onClose={closePreview}
         onSave={() => {
           if (previewScreen) {
             persistReference(previewScreen);
-            setPreviewScreen(null);
+            closePreview();
           }
         }}
         onRemove={() => previewScreen && handleRemove(previewScreen.slug)}

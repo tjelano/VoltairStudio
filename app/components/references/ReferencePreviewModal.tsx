@@ -2,6 +2,21 @@ import * as RadixDialog from '@radix-ui/react-dialog';
 import { Dialog, DialogTitle, DialogButton } from '~/components/ui/Dialog';
 import type { InspoScreen } from './types';
 
+/*
+ * Inspo's real autopsy format is always these 4 labeled sections. Splitting on a blank line
+ * (the naive approach) breaks if a section's own body text ever contains one; splitting right
+ * before a known label instead is robust to that and to any other incidental whitespace.
+ */
+const AUTOPSY_SECTION_LABELS = ['FOLD', 'TYPE', 'COLOR', 'SIGNATURE'];
+const AUTOPSY_SPLIT_PATTERN = new RegExp(`(?=(?:${AUTOPSY_SECTION_LABELS.join('|')}):)`);
+
+function splitAutopsySections(autopsy: string): string[] {
+  return autopsy
+    .split(AUTOPSY_SPLIT_PATTERN)
+    .map((section) => section.trim())
+    .filter(Boolean);
+}
+
 interface ReferencePreviewModalProps {
   screen: InspoScreen | null;
   loadingMore: boolean;
@@ -74,7 +89,7 @@ export function ReferencePreviewModal({
 
               {screen.autopsy ? (
                 <div className="flex flex-col gap-3 text-sm text-bolt-elements-textPrimary">
-                  {screen.autopsy.split('\n\n').map((section, index) => {
+                  {splitAutopsySections(screen.autopsy).map((section, index) => {
                     const [label, ...rest] = section.split(':');
                     const body = rest.join(':').trim();
 
