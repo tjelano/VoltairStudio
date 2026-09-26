@@ -25,6 +25,7 @@ import GitHubTab from '~/components/@settings/tabs/github/GitHubTab';
 import GitLabTab from '~/components/@settings/tabs/gitlab/GitLabTab';
 import SupabaseTab from '~/components/@settings/tabs/supabase/SupabaseTab';
 import FirebaseTab from '~/components/@settings/tabs/firebase/FirebaseTab';
+import DeepSeekReviewTab from '~/components/@settings/tabs/deepseek-review/DeepSeekReviewTab';
 import VercelTab from '~/components/@settings/tabs/vercel/VercelTab';
 import NetlifyTab from '~/components/@settings/tabs/netlify/NetlifyTab';
 import CloudProvidersTab from '~/components/@settings/tabs/providers/cloud/CloudProvidersTab';
@@ -146,6 +147,8 @@ export const ControlPanel = ({ open, onClose }: ControlPanelProps) => {
         return <SupabaseTab />;
       case 'firebase':
         return <FirebaseTab />;
+      case 'deepseek-review':
+        return <DeepSeekReviewTab />;
       case 'vercel':
         return <VercelTab />;
       case 'netlify':
