@@ -17,6 +17,7 @@ export type TabType =
   | 'vercel'
   | 'supabase'
   | 'firebase'
+  | 'deepseek-review'
   | 'event-logs'
   | 'mcp';
 
@@ -81,6 +82,7 @@ export const TAB_LABELS: Record<TabType, string> = {
   vercel: 'Vercel',
   supabase: 'Supabase',
   firebase: 'Firebase',
+  'deepseek-review': 'DeepSeek Review',
   'event-logs': 'Event Logs',
   mcp: 'MCP Servers',
 };

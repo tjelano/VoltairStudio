@@ -1,5 +1,5 @@
 import type { TabType } from './types';
-import { User, Settings, Bell, Star, Database, Cloud, Laptop, Github, Wrench, List } from 'lucide-react';
+import { User, Settings, Bell, Star, Database, Cloud, Laptop, Github, Wrench, List, ShieldCheck } from 'lucide-react';
 
 // GitLab icon component
 const GitLabIcon = () => (
@@ -57,6 +57,7 @@ export const TAB_ICONS: Record<TabType, React.ComponentType<{ className?: string
   vercel: () => <VercelIcon />,
   supabase: () => <SupabaseIcon />,
   firebase: () => <FirebaseIcon />,
+  'deepseek-review': ShieldCheck,
   'event-logs': List,
   mcp: Wrench,
 };
@@ -75,6 +76,7 @@ export const TAB_LABELS: Record<TabType, string> = {
   vercel: 'Vercel',
   supabase: 'Supabase',
   firebase: 'Firebase',
+  'deepseek-review': 'DeepSeek Review',
   'event-logs': 'Event Logs',
   mcp: 'MCP Servers',
 };
@@ -93,6 +95,7 @@ export const TAB_DESCRIPTIONS: Record<TabType, string> = {
   vercel: 'Manage Vercel projects and deployments',
   supabase: 'Setup Supabase database connection',
   firebase: 'Setup Firebase project connection',
+  'deepseek-review': 'Bring adversarial cross-model code review to any project',
   'event-logs': 'View system events and logs',
   mcp: 'Configure MCP (Model Context Protocol) servers',
 };
@@ -109,9 +112,10 @@ export const DEFAULT_TAB_CONFIG = [
   { id: 'vercel', visible: true, window: 'user' as const, order: 7 },
   { id: 'supabase', visible: true, window: 'user' as const, order: 8 },
   { id: 'firebase', visible: true, window: 'user' as const, order: 9 },
-  { id: 'notifications', visible: true, window: 'user' as const, order: 10 },
-  { id: 'event-logs', visible: true, window: 'user' as const, order: 11 },
-  { id: 'mcp', visible: true, window: 'user' as const, order: 12 },
+  { id: 'deepseek-review', visible: true, window: 'user' as const, order: 10 },
+  { id: 'notifications', visible: true, window: 'user' as const, order: 11 },
+  { id: 'event-logs', visible: true, window: 'user' as const, order: 12 },
+  { id: 'mcp', visible: true, window: 'user' as const, order: 13 },
 
   // User Window Tabs (In dropdown, initially hidden)
 ];
