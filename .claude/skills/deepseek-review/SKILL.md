@@ -89,7 +89,7 @@ Paste the full contents of `PLAN_FILE`, plus any repo files the plan depends on 
 
 PR-style feedback, not a gate — no verdict loop.
 
-1. Get the diff: `git diff <base>...<head>` (or the working tree diff for uncommitted work).
+1. Get the diff: `git diff <base>...<head>` (or, for uncommitted work, `git diff HEAD` plus `git status --porcelain` to catch untracked files, since a plain `git diff` alone misses staged changes and skips untracked files entirely).
 2. Write one message containing: the diff itself, `PLAN.md` if one exists for this work, and a short note on what the change is trying to do.
 3. System prompt:
    > You are reviewing a code diff, PR-style. Your mandate is to refute it — assume each change is wrong until you can't find how. You have no filesystem access beyond what's pasted here — ask for more context only by naming the exact file/lines you need, don't guess. Attack from three angles: (1) what would a quick skim miss? (2) does the diff actually do what it claims to do? (3) does it cross a hard boundary — security, correctness, data loss? Don't invent scope creep. One finding per line: file/location, what's wrong, why it matters, one-line fix. No verdict line needed.
