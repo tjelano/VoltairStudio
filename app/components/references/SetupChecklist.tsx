@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useStore } from '@nanostores/react';
 import {
   Dropdown,
@@ -8,6 +8,7 @@ import {
   DropdownSeparator,
 } from '~/components/ui/Dropdown';
 import { classNames } from '~/utils/classNames';
+import { usePersistedState } from '~/lib/hooks/usePersistedState';
 import { supabaseConnection } from '~/lib/stores/supabase';
 import { firebaseConnection, initializeFirebaseConnection } from '~/lib/stores/firebase';
 import { githubConnection } from '~/lib/stores/github';
@@ -89,25 +90,29 @@ export function SetupChecklist({ selections, onChange }: SetupChecklistProps) {
   const connectionStatus = useSetupConnectionStatus();
 
   /*
-   * Tracks which connections we've already auto-applied, so a later manual uncheck isn't
-   * fought on the next render. Can't gate this on a single "ran once" ref with an empty
-   * dependency array: Supabase/GitHub/Vercel/Netlify read localStorage synchronously at
-   * module load, but Firebase only hydrates one render later via its own effect (see
-   * useSetupConnectionStatus above) — an empty-deps effect would evaluate Firebase's status
-   * before that hydration lands and never get a second chance to notice it flip to connected.
+   * Tracks which connections we've ever auto-applied, so a later manual uncheck isn't fought
+   * on a future render or reload. This has to be its own persisted value, separate from
+   * `selections.connections` itself: `selections` can now be restored from localStorage (see
+   * usePersistedState) with a connection deliberately removed while still connected, and a
+   * seed taken from live connection status at mount can't tell "already decided, stay
+   * removed" apart from "not yet reacted to" -- Firebase in particular only hydrates one
+   * render after mount (see useSetupConnectionStatus above), so it reads as disconnected on
+   * that very first render regardless of its real state.
    */
-  const syncedConnections = useRef<Set<string>>(new Set());
+  const [syncedConnections, setSyncedConnections] = usePersistedState<string[]>(
+    'references_setup_synced_connections',
+    [],
+  );
+  const syncedSet = new Set(syncedConnections);
 
   useEffect(() => {
-    const newlyConnected = CONNECTION_ITEMS.filter(
-      (item) => connectionStatus[item] && !syncedConnections.current.has(item),
-    );
+    const newlyConnected = CONNECTION_ITEMS.filter((item) => connectionStatus[item] && !syncedSet.has(item));
 
     if (newlyConnected.length === 0) {
       return;
     }
 
-    newlyConnected.forEach((item) => syncedConnections.current.add(item));
+    setSyncedConnections((prev) => Array.from(new Set([...prev, ...newlyConnected])));
 
     onChange({
       ...selections,
