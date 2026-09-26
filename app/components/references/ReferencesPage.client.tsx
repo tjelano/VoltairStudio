@@ -18,7 +18,7 @@ export function ReferencesPage() {
   const [results, setResults] = useState<InspoScreen[]>([]);
   const [searching, setSearching] = useState(false);
   const [saved, setSaved] = useState<SavedReference[]>([]);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [importUrl, setImportUrl] = useState('');
   const [importing, setImporting] = useState(false);
   const [previewScreen, setPreviewScreen] = useState<InspoScreen | null>(null);
@@ -133,12 +133,7 @@ export function ReferencesPage() {
 
   const handleRemove = async (id: string) => {
     await removeReference(id);
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-
-      return next;
-    });
+    setSelectedIds((prev) => prev.filter((selectedId) => selectedId !== id));
     await refreshSaved();
 
     if (previewScreen?.slug === id) {
@@ -199,14 +194,20 @@ export function ReferencesPage() {
   };
 
   const toggleSelected = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((selectedId) => selectedId !== id) : [...prev, id]));
+  };
 
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
+  const moveSelected = (id: string, direction: 'up' | 'down') => {
+    setSelectedIds((prev) => {
+      const index = prev.indexOf(id);
+      const swapWith = direction === 'up' ? index - 1 : index + 1;
+
+      if (index === -1 || swapWith < 0 || swapWith >= prev.length) {
+        return prev;
       }
+
+      const next = [...prev];
+      [next[index], next[swapWith]] = [next[swapWith], next[index]];
 
       return next;
     });
@@ -214,7 +215,8 @@ export function ReferencesPage() {
 
   const savedIds = new Set(saved.map((ref) => ref.id));
 
-  const selected = saved.filter((ref) => selectedIds.has(ref.id));
+  const savedById = new Map(saved.map((ref) => [ref.id, ref]));
+  const selected = selectedIds.map((id) => savedById.get(id)).filter((ref): ref is SavedReference => ref !== undefined);
 
   const previewSaved = previewScreen ? savedIds.has(previewScreen.slug) : false;
 
@@ -320,7 +322,7 @@ export function ReferencesPage() {
                     }
                     note={ref.note}
                     onNoteChange={(note) => handleNoteChange(ref, note)}
-                    selected={selectedIds.has(ref.id)}
+                    selected={selectedIds.includes(ref.id)}
                     onToggleSelect={() => toggleSelected(ref.id)}
                   />
                 ))}
@@ -333,7 +335,7 @@ export function ReferencesPage() {
           )}
         </div>
 
-        <PromptBuilder selected={selected} />
+        <PromptBuilder selected={selected} onReorder={moveSelected} onDeselect={toggleSelected} />
       </div>
 
       <ReferencePreviewModal
