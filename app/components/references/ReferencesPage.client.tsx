@@ -11,14 +11,15 @@ import {
   removeReference,
   type SavedReference,
 } from '~/lib/persistence/referencesDb.client';
+import { usePersistedState } from '~/lib/hooks/usePersistedState';
 
 export function ReferencesPage() {
   const [query, setQuery] = useState('');
-  const [filters, setFilters] = useState<SearchFilterSelections>(EMPTY_SEARCH_FILTERS);
+  const [filters, setFilters] = usePersistedState<SearchFilterSelections>('references_filters', EMPTY_SEARCH_FILTERS);
   const [results, setResults] = useState<InspoScreen[]>([]);
   const [searching, setSearching] = useState(false);
   const [saved, setSaved] = useState<SavedReference[]>([]);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = usePersistedState<string[]>('references_selected_ids', []);
   const [importUrl, setImportUrl] = useState('');
   const [importing, setImporting] = useState(false);
   const [previewScreen, setPreviewScreen] = useState<InspoScreen | null>(null);

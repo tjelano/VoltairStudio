@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { toast } from 'react-toastify';
 import type { SavedReference } from '~/lib/persistence/referencesDb.client';
+import { usePersistedState } from '~/lib/hooks/usePersistedState';
 import {
   SetupChecklist,
   EMPTY_SETUP_SELECTIONS,
@@ -81,8 +82,8 @@ function buildPrompt(
 }
 
 export function PromptBuilder({ selected, onReorder, onDeselect }: PromptBuilderProps) {
-  const [brief, setBrief] = useState('');
-  const [setup, setSetup] = useState<SetupSelections>(EMPTY_SETUP_SELECTIONS);
+  const [brief, setBrief] = usePersistedState('references_prompt_brief', '');
+  const [setup, setSetup] = usePersistedState<SetupSelections>('references_prompt_setup', EMPTY_SETUP_SELECTIONS);
   const connectionStatus = useSetupConnectionStatus();
   const prompt = useMemo(
     () => buildPrompt(brief, selected, setup, connectionStatus),
