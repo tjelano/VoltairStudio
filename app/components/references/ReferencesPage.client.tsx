@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { ReferenceCard } from './ReferenceCard';
 import { PromptBuilder } from './PromptBuilder';
 import { SearchFilters } from './SearchFilters';
+import { ReferencePreviewModal } from './ReferencePreviewModal';
 import { EMPTY_SEARCH_FILTERS, type InspoScreen, type InspoSearchResponse, type SearchFilterSelections } from './types';
 import {
   listReferences,
@@ -20,7 +21,10 @@ export function ReferencesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [importUrl, setImportUrl] = useState('');
   const [importing, setImporting] = useState(false);
+  const [previewScreen, setPreviewScreen] = useState<InspoScreen | null>(null);
+  const [previewLoadingMore, setPreviewLoadingMore] = useState(false);
   const searchSeq = useRef(0);
+  const previewSeq = useRef(0);
 
   const refreshSaved = async () => {
     setSaved(await listReferences());
@@ -136,6 +140,51 @@ export function ReferencesPage() {
       return next;
     });
     await refreshSaved();
+
+    if (previewScreen?.slug === id) {
+      closePreview();
+    }
+  };
+
+  const closePreview = () => {
+    previewSeq.current += 1;
+    setPreviewScreen(null);
+  };
+
+  const handlePreview = async (screen: InspoScreen) => {
+    const seq = ++previewSeq.current;
+    const existing = saved.find((ref) => ref.id === screen.slug);
+
+    if (existing) {
+      setPreviewScreen({
+        slug: existing.slug,
+        title: existing.title,
+        sourceUrl: existing.siteUrl ?? '',
+        thumb: existing.screenshotUrl ?? '',
+        northstar: existing.northstar,
+        autopsy: existing.autopsy,
+        palette: existing.palette,
+      });
+      return;
+    }
+
+    setPreviewScreen(screen);
+    setPreviewLoadingMore(true);
+
+    try {
+      const full = await fetchFullScreen(screen.slug);
+
+      // Ignore a stale response if the modal was closed or a different card previewed meanwhile.
+      if (seq === previewSeq.current) {
+        setPreviewScreen(full);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      if (seq === previewSeq.current) {
+        setPreviewLoadingMore(false);
+      }
+    }
   };
 
   const handleNoteChange = async (ref: SavedReference, note: string) => {
@@ -166,6 +215,8 @@ export function ReferencesPage() {
   const savedIds = new Set(saved.map((ref) => ref.id));
 
   const selected = saved.filter((ref) => selectedIds.has(ref.id));
+
+  const previewSaved = previewScreen ? savedIds.has(previewScreen.slug) : false;
 
   return (
     <div className="relative flex flex-col h-full overflow-y-auto z-1">
@@ -230,6 +281,7 @@ export function ReferencesPage() {
                   saved={savedIds.has(screen.slug)}
                   onSave={() => handleSave(screen)}
                   onRemove={() => handleRemove(screen.slug)}
+                  onPreview={() => handlePreview(screen)}
                 />
               ))}
             </div>
@@ -252,9 +304,20 @@ export function ReferencesPage() {
                       title: ref.title,
                       sourceUrl: ref.siteUrl ?? '',
                       thumb: ref.screenshotUrl ?? '',
+                      northstar: ref.northstar,
+                      autopsy: ref.autopsy,
+                      palette: ref.palette,
                     }}
                     saved
                     onRemove={() => handleRemove(ref.id)}
+                    onPreview={() =>
+                      handlePreview({
+                        slug: ref.slug,
+                        title: ref.title,
+                        sourceUrl: ref.siteUrl ?? '',
+                        thumb: ref.screenshotUrl ?? '',
+                      })
+                    }
                     note={ref.note}
                     onNoteChange={(note) => handleNoteChange(ref, note)}
                     selected={selectedIds.has(ref.id)}
@@ -272,6 +335,20 @@ export function ReferencesPage() {
 
         <PromptBuilder selected={selected} />
       </div>
+
+      <ReferencePreviewModal
+        screen={previewScreen}
+        loadingMore={previewLoadingMore}
+        saved={previewSaved}
+        onClose={closePreview}
+        onSave={() => {
+          if (previewScreen) {
+            persistReference(previewScreen);
+            closePreview();
+          }
+        }}
+        onRemove={() => previewScreen && handleRemove(previewScreen.slug)}
+      />
     </div>
   );
 }
