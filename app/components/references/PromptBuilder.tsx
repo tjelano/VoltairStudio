@@ -9,6 +9,20 @@ import {
   type SetupSelections,
 } from './SetupChecklist';
 
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+
+function isSetupSelections(value: unknown): value is SetupSelections {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  return typeof record.framework === 'string' && isStringArray(record.connections) && isStringArray(record.features);
+}
+
 interface PromptBuilderProps {
   selected: SavedReference[];
   onReorder: (id: string, direction: 'up' | 'down') => void;
@@ -83,7 +97,11 @@ function buildPrompt(
 
 export function PromptBuilder({ selected, onReorder, onDeselect }: PromptBuilderProps) {
   const [brief, setBrief] = usePersistedState('references_prompt_brief', '');
-  const [setup, setSetup] = usePersistedState<SetupSelections>('references_prompt_setup', EMPTY_SETUP_SELECTIONS);
+  const [setup, setSetup] = usePersistedState<SetupSelections>(
+    'references_prompt_setup',
+    EMPTY_SETUP_SELECTIONS,
+    isSetupSelections,
+  );
   const connectionStatus = useSetupConnectionStatus();
   const prompt = useMemo(
     () => buildPrompt(brief, selected, setup, connectionStatus),

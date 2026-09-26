@@ -13,9 +13,25 @@ import {
 } from '~/lib/persistence/referencesDb.client';
 import { usePersistedState } from '~/lib/hooks/usePersistedState';
 
+const SEARCH_FILTER_KEYS = ['style', 'industry', 'vibe', 'color', 'pageType'] as const;
+
+function isSearchFilterSelections(value: unknown): value is SearchFilterSelections {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  return SEARCH_FILTER_KEYS.every((key) => typeof record[key] === 'string');
+}
+
 export function ReferencesPage() {
   const [query, setQuery] = useState('');
-  const [filters, setFilters] = usePersistedState<SearchFilterSelections>('references_filters', EMPTY_SEARCH_FILTERS);
+  const [filters, setFilters] = usePersistedState<SearchFilterSelections>(
+    'references_filters',
+    EMPTY_SEARCH_FILTERS,
+    isSearchFilterSelections,
+  );
   const [results, setResults] = useState<InspoScreen[]>([]);
   const [searching, setSearching] = useState(false);
   const [saved, setSaved] = useState<SavedReference[]>([]);

@@ -21,7 +21,7 @@ function isCompatibleShape(value: unknown, initial: unknown): boolean {
   return typeof value === typeof initial;
 }
 
-function readPersisted<T>(key: string, initial: T): T {
+function readPersisted<T>(key: string, initial: T, isValid: (value: unknown) => value is T): T {
   try {
     const raw = localStorage.getItem(key);
 
@@ -31,7 +31,7 @@ function readPersisted<T>(key: string, initial: T): T {
 
     const parsed = JSON.parse(raw);
 
-    return isCompatibleShape(parsed, initial) ? (parsed as T) : initial;
+    return isValid(parsed) ? parsed : initial;
   } catch {
     return initial;
   }
@@ -41,9 +41,18 @@ function readPersisted<T>(key: string, initial: T): T {
  * Like useState, but the value survives reload/navigation via localStorage.
  * Only safe to call from client-only components (no SSR guard) -- callers
  * of this hook are all rendered inside .client.tsx boundaries.
+ *
+ * `isValid` defaults to a shallow container-type check (good enough for a
+ * plain string/string[]) -- pass a real type guard for an object shape with
+ * fields a caller reads directly (e.g. `setup.connections.length`), since an
+ * object that merely isn't null/an array can still be missing that field.
  */
-export function usePersistedState<T>(key: string, initial: T) {
-  const [state, setState] = useState<T>(() => readPersisted(key, initial));
+export function usePersistedState<T>(
+  key: string,
+  initial: T,
+  isValid: (value: unknown) => value is T = (value): value is T => isCompatibleShape(value, initial),
+) {
+  const [state, setState] = useState<T>(() => readPersisted(key, initial, isValid));
 
   useEffect(() => {
     try {
