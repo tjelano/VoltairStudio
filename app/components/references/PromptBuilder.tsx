@@ -10,6 +10,8 @@ import {
 
 interface PromptBuilderProps {
   selected: SavedReference[];
+  onReorder: (id: string, direction: 'up' | 'down') => void;
+  onDeselect: (id: string) => void;
 }
 
 function buildPrompt(
@@ -78,7 +80,7 @@ function buildPrompt(
   return lines.join('\n');
 }
 
-export function PromptBuilder({ selected }: PromptBuilderProps) {
+export function PromptBuilder({ selected, onReorder, onDeselect }: PromptBuilderProps) {
   const [brief, setBrief] = useState('');
   const [setup, setSetup] = useState<SetupSelections>(EMPTY_SETUP_SELECTIONS);
   const connectionStatus = useSetupConnectionStatus();
@@ -137,6 +139,49 @@ export function PromptBuilder({ selected }: PromptBuilderProps) {
           rows={2}
         />
       </div>
+      {selected.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs text-bolt-elements-textSecondary">
+            Selected for prompt — order matters, top reads first
+          </span>
+          <ul className="flex flex-col gap-1.5">
+            {selected.map((ref, index) => (
+              <li
+                key={ref.id}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-bolt-elements-borderColor bg-bolt-elements-background-depth-1 text-sm"
+              >
+                <span className="flex-1 truncate text-bolt-elements-textPrimary">{ref.title}</span>
+                <button
+                  type="button"
+                  onClick={() => onReorder(ref.id, 'up')}
+                  disabled={index === 0}
+                  aria-label={`Move ${ref.title} up`}
+                  className="px-1.5 py-0.5 rounded text-bolt-elements-textSecondary hover:bg-bolt-elements-background-depth-3 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onReorder(ref.id, 'down')}
+                  disabled={index === selected.length - 1}
+                  aria-label={`Move ${ref.title} down`}
+                  className="px-1.5 py-0.5 rounded text-bolt-elements-textSecondary hover:bg-bolt-elements-background-depth-3 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDeselect(ref.id)}
+                  aria-label={`Remove ${ref.title} from prompt`}
+                  className="px-1.5 py-0.5 rounded text-bolt-elements-textSecondary hover:bg-bolt-elements-background-depth-3 transition-colors"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div>
         <SetupChecklist selections={setup} onChange={setSetup} />
       </div>
