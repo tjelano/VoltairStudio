@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { classNames } from '~/utils/classNames';
 
-const QUICK_START = `GameForge uses an adversarial code-review technique worth borrowing for any project: alongside whatever AI coding assistant you're using to write code, have a SEPARATE, different-vendor model review it critically before you trust it -- cross-model review catches blind spots a same-model "review my own work" pass can't see.
+const QUICK_START = `This is an adversarial code-review technique worth borrowing for any project: alongside whatever AI coding assistant you're using to write code, have a SEPARATE, different-vendor model review it critically before you trust it -- cross-model review catches blind spots a same-model "review my own work" pass can't see.
 
-This repo already has it set up at .claude/skills/deepseek-review/ -- if you have Claude Code open here, just ask it to "deepseek review this diff" or "deepseek review my plan" once you've set an OPENROUTER_API_KEY (get one at openrouter.ai -- a few dollars of credit covers a huge number of reviews, each call costs fractions of a cent).
+If the project you're pasting this into already has it set up at .claude/skills/deepseek-review/, just ask Claude Code to "deepseek review this diff" or "deepseek review my plan" once you've set an OPENROUTER_API_KEY (get one at openrouter.ai -- a few dollars of credit covers a huge number of reviews, each call costs fractions of a cent).
 
 To bring the same technique to a different project: the core idea is a plain chat-completions API call (no filesystem access needed) with a system prompt along these lines --
 
