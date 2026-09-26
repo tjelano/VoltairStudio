@@ -5,6 +5,7 @@ interface ReferenceCardProps {
   saved?: boolean;
   onSave?: () => void;
   onRemove?: () => void;
+  onPreview?: () => void;
   note?: string;
   onNoteChange?: (note: string) => void;
   selected?: boolean;
@@ -16,6 +17,7 @@ export function ReferenceCard({
   saved,
   onSave,
   onRemove,
+  onPreview,
   note,
   onNoteChange,
   selected,
@@ -40,13 +42,25 @@ export function ReferenceCard({
             className="absolute top-2 left-2 w-4 h-4 z-10 accent-purple-500"
           />
         )}
-        <img
-          src={screen.thumb}
-          alt={screen.title}
-          crossOrigin="anonymous"
-          className="w-full h-40 object-cover object-top bg-bolt-elements-background-depth-3"
-          loading="lazy"
-        />
+        {onPreview ? (
+          <button type="button" onClick={onPreview} className="block w-full">
+            <img
+              src={screen.thumb}
+              alt={screen.title}
+              crossOrigin="anonymous"
+              className="w-full h-40 object-cover object-top bg-bolt-elements-background-depth-3 cursor-pointer"
+              loading="lazy"
+            />
+          </button>
+        ) : (
+          <img
+            src={screen.thumb}
+            alt={screen.title}
+            crossOrigin="anonymous"
+            className="w-full h-40 object-cover object-top bg-bolt-elements-background-depth-3"
+            loading="lazy"
+          />
+        )}
       </div>
       <div className="p-3.5 flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2">
